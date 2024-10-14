@@ -9,7 +9,6 @@ import * as dotenv from 'dotenv';
 import { Author } from "./entities/author.entity";
 import { CreateAuthorDto } from "./dto/create-author.dto";
 import { FileService, FileType } from "src/file/file.service";
-import { response } from "express";
 
 dotenv.config();
 
@@ -46,7 +45,11 @@ export class UserService {
 
     async createAuthor(dto: CreateAuthorDto, picture, userId): Promise<Author> {
         const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
-        const author = await this.authorModel.create({...dto, picture: picturePath, userId});
+        const author = await this.authorModel.create({
+            ...dto, 
+            picture: picturePath,
+            userId
+        });
         return author;
     }
 

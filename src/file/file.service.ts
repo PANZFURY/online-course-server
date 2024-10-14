@@ -5,7 +5,8 @@ import * as fs from 'fs';
 import * as uuid from 'uuid';
 
 export enum FileType {
-    IMAGE = 'image'
+    IMAGE = 'image',
+    VIDEO = 'video'
 }
 
 @Injectable()

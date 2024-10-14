@@ -2,10 +2,14 @@ import { Module } from "@nestjs/common";
 import { SequelizeModule } from "@nestjs/sequelize";
 import * as dotenv from 'dotenv';
 import { Dialect } from "sequelize";
-import { UserModule } from "./users/user.module";
-import { User } from "./users/entities/user.entity";
-import { Author } from "./users/entities/author.entity";
+import { UserModule } from "./user/user.module";
+import { User } from "./user/entities/user.entity";
+import { Author } from "./user/entities/author.entity";
 import { FileModule } from "./file/file.module";
+import { CourseModule } from "./course/course.module";
+import { LessonModule } from "./course/lesson/lesson.module";
+import { Course } from "./course/entities/course.entity";
+import { Lesson } from "./course/lesson/entities/lesson.entity";
 
 dotenv.config();
 
@@ -18,12 +22,14 @@ dotenv.config();
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
-            models: [User, Author],
+            models: [User, Author, Course, Lesson],
             autoLoadModels: true,
             synchronize: true,
         }),
         UserModule,
-        FileModule
+        FileModule,
+        CourseModule,
+        LessonModule
     ],
 })
 

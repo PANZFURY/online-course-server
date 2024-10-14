@@ -2,13 +2,17 @@ import { Injectable, NestMiddleware, UnauthorizedException } from "@nestjs/commo
 import { NextFunction, Request, Response } from "express";
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
-import { User } from "src/users/entities/user.entity";
+import { User } from "src/user/entities/user.entity";
 
 dotenv.config();
 
 @Injectable()
 export class AuthMiddleware implements NestMiddleware {
     use(req: Request, res: Response, next: NextFunction) {
+        if (req.path === '/course') {
+            return next()
+        }
+        
         const authHeader = req.headers.authorization;
         if (!authHeader) {
             throw new UnauthorizedException('Authorization header is missing');
