@@ -1,4 +1,4 @@
-import { AutoIncrement, Column, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { AutoIncrement, BelongsTo, Column, ForeignKey, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { User } from './user.entity';
 
 @Table
@@ -12,5 +12,8 @@ export class Author extends Model {
 
   @Column
   picture: string;
+
+  @BelongsTo(() => User)
+  user: User
 
 }

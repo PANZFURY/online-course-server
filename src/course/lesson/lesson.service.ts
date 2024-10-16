@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Lesson } from "./entities/lesson.entity";
 import { CreateLessonDto } from "./dto/create-lesson.dto";
@@ -23,6 +23,23 @@ export class LessonService{
             authorId,
             courseId: course.id
         })
+        return lesson;
+    }
+
+    async updateLesson(lessonId: number, updateData: Partial<Lesson>): Promise<Lesson> {
+        const [affectedCount, affectedRows] = await this.lessonModel.update(updateData, {
+            where: {id: lessonId},
+            returning: true
+        });
+        if (!affectedCount) {
+            throw new UnauthorizedException('Lesson was not found or incorrect data');
+        }
+        
+        return affectedRows[0];
+    }
+
+    async deleteLesson(lessonId): Promise<number> {
+        const lesson = await this.lessonModel.destroy({where: {id: lessonId}});
         return lesson;
     }
 }

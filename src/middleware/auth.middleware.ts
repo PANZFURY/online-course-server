@@ -3,6 +3,7 @@ import { NextFunction, Request, Response } from "express";
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 import { User } from "src/user/entities/user.entity";
+import { Author } from "src/user/entities/author.entity";
 
 dotenv.config();
 
@@ -22,7 +23,7 @@ export class AuthMiddleware implements NestMiddleware {
             throw new UnauthorizedException('Token is missing');
         }
         try {
-            const decoded = jwt.verify(token, process.env.SECRET_KEY) as User;
+            const decoded = jwt.verify(token, process.env.SECRET_KEY) as [User, Author];
             (req as any).user = decoded;
         }
         catch(e) {

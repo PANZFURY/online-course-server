@@ -1,4 +1,4 @@
-import { AutoIncrement, Column, HasMany, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { AutoIncrement, Column, HasOne, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { Author } from './author.entity';
 
 @Table
@@ -17,7 +17,7 @@ export class User extends Model {
   @Column
   password: string;
 
-  @HasMany(() => Author)
-  authors: Author[]
+  @HasOne(() => Author, {as: 'author'})
+  author: Author
 
 }

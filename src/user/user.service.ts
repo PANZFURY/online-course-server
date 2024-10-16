@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Inject, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Inject, Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { User } from "./entities/user.entity";
 import { CreateUserDto } from "./dto/create-user.dto";
@@ -12,10 +12,19 @@ import { FileService, FileType } from "src/file/file.service";
 
 dotenv.config();
 
-function generateJwt(userId, username): string {
+function generateJwtForUser(userId, username): string {
     const token = jwt.sign({
         id: userId,
         username,
+    }, process.env.SECRET_KEY,
+    {expiresIn: '24h'}
+    )
+    return token;
+}
+
+function generateJwtForAuthor(authorId): string {
+    const token = jwt.sign({
+        authorId
     }, process.env.SECRET_KEY,
     {expiresIn: '24h'}
     )
@@ -33,38 +42,70 @@ export class UserService {
     ) {}
 
     async createUser(dto: CreateUserDto): Promise<string> {
-        const hashedPassword = await bcrypt.hash(dto.password, 10);
-        const user = await this.userModel.create({
-            username: dto.username,
-            email: dto.email,
-            password: hashedPassword
-        })
-    const token = generateJwt(user.id, user.username);
-    return token;
+       try{
+            const hashedPassword = await bcrypt.hash(dto.password, 10);
+            const user = await this.userModel.create({
+                username: dto.username,
+                email: dto.email,
+                password: hashedPassword
+            })
+            const token = generateJwtForUser(user.id, user.username);
+            return token;
+       } catch(e) {
+        throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR )
+        }
     }
 
-    async createAuthor(dto: CreateAuthorDto, picture, userId): Promise<Author> {
-        const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
-        const author = await this.authorModel.create({
-            ...dto, 
-            picture: picturePath,
-            userId
-        });
-        return author;
+    async createAuthor(dto: CreateAuthorDto, picture: Express.Multer.File, userId: number): Promise<string> {
+        try{
+            const candidate = await this.authorModel.findOne({where: {userId}});
+            if (candidate) {
+                throw new UnauthorizedException('Author is already exists')
+            }
+            const picturePath = this.fileService.createFile(FileType.IMAGE, picture);
+            const author = await this.authorModel.create({
+                ...dto, 
+                picture: picturePath,
+                userId
+            });
+        
+            const token = generateJwtForAuthor(author.id);
+            return token;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
-    async login(dto: LoginUserDto): Promise<string> {
-        const user = await this.userModel.findOne({where: {email: dto.email, username: dto.username}});
-        if (!user) {
-            throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+    async loginUser(dto: LoginUserDto): Promise<string> {
+        try{
+            const user = await this.userModel.findOne({where: {email: dto.email, username: dto.username}});
+            if (!user) {
+                throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+            }
+            const passwordMatch = await bcrypt.compare(dto.password, user.password);
+            if (!passwordMatch) {
+                throw new Error('Invalid password');
+            }
+            const token = generateJwtForUser(user.id, user.username);
+            return token;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        const passwordMatch = await bcrypt.compare(dto.password, user.password);
-        if (!passwordMatch) {
-            throw new Error('Invalid password');
-        }
-        const token = generateJwt(user.id, user.username);
-        return token;
 
+    }
+
+    async loginAuthor(userId): Promise<string> {
+        try{
+            const author = await this.authorModel.findOne({where: {userId}});
+            if (!author) {
+                throw new UnauthorizedException('Author not found');
+            }
+
+            const token = generateJwtForAuthor(userId);
+            return token;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
     }
 
     async check(): Promise<string> {
