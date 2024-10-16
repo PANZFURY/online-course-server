@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/sequelize";
 import { Lesson } from "./entities/lesson.entity";
 import { CreateLessonDto } from "./dto/create-lesson.dto";
@@ -14,17 +14,27 @@ export class LessonService{
         private readonly courseModel: typeof Course,
         private fileService: FileService
     ) {}
-    async createLesson(dto: CreateLessonDto, video, authorId, courseId): Promise<Lesson> {
-        const videoPath = this.fileService.createFile(FileType.VIDEO, video)
-        const course = await this.courseModel.findOne({where: {id: courseId}})
-        const lesson = await this.lessonModel.create({
-            ...dto,
-            video: videoPath,
-            authorId,
-            courseId: course.id
-        })
-        return lesson;
-    }
+    async createLesson(dto: CreateLessonDto, video: Express.Multer.File, authorId: number, courseId: number): Promise<Lesson> {
+        try{
+            const videoPath = this.fileService.createFile(FileType.VIDEO, video);
+            if (!videoPath) {
+                throw new InternalServerErrorException('Failed to upload file')
+            }
+            const course = await this.courseModel.findOne({where: {id: courseId}})
+            if (!course) {
+                throw new BadRequestException('Course was not found');
+            }
+            const lesson = await this.lessonModel.create({
+                ...dto,
+                video: videoPath,
+                authorId,
+                courseId: course.id
+            })
+            return lesson;
+         } catch(e) {
+        throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+     }
 
     async updateLesson(lessonId: number, updateData: Partial<Lesson>): Promise<Lesson> {
         const [affectedCount, affectedRows] = await this.lessonModel.update(updateData, {

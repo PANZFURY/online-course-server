@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, Patch, Post, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
+import { BadRequestException, Body, Controller, Delete, Get, HttpException, HttpStatus, Patch, Post, Req, UnauthorizedException, UseInterceptors } from "@nestjs/common";
 import { CourseService } from "./course.service";
 import { CreateCourseDto } from "./dto/create-course.dto";
 import { Course } from "./entities/course.entity";
@@ -27,24 +27,52 @@ export class CourseController {
 
     @Patch(':id')
     async updateCourse(@Body() dto: UpdateCourseDto, @Req() req: Request): Promise<Course> {
-        const {id} = (req as any).params;
-        const course = await this.courseService.updateCourse(id, dto);
-        return course;
+        try{
+            const {id} = (req as any).params;
+            if (!id) {
+                throw new BadRequestException('Incorrect id');
+            }
+            const course = await this.courseService.updateCourse(id, dto);
+            return course;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
     @Delete(':id')
     async deleteCourse(@Req() req: Request): Promise<number> {
-        const {id} = (req as any).params;
-        const course = await this.courseService.deleteCourse(id);
-        return course;
+        try {
+            const {id} = (req as any).params;
+            if (!id) {
+                throw new BadRequestException('Incorrect id');
+            }
+            const course = await this.courseService.deleteCourse(id);
+            return course;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 
-    async getAll() {}
+    async getAll(): Promise<any> {
+        try{
+            const courses = await this.courseService.getAll();
+            return courses;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
     
     @Get(':id')
     async getOne(@Req() req: Request): Promise<Course> {
-        const {id} = (req as any).params;
-        const course = this.courseService.getOne(id);
-        return course;
+        try{
+             const {id} = (req as any).params;
+             if (!id) {
+                throw new BadRequestException('Incorrect id');
+             }
+            const course = this.courseService.getOne(id);
+            return course;
+        } catch(e) {
+            throw new HttpException(e.message, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
     }
 }
