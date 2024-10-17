@@ -1,9 +1,10 @@
-import { HttpException, HttpStatus, Injectable, UnauthorizedException } from "@nestjs/common";
+import { BadRequestException, HttpException, HttpStatus, Injectable, InternalServerErrorException, UnauthorizedException } from "@nestjs/common";
 import { CreateCourseDto } from "./dto/create-course.dto";
 import { InjectModel } from "@nestjs/sequelize";
 import { Course } from "./entities/course.entity";
 import { Lesson } from "./lesson/entities/lesson.entity";
 import { Author } from "src/user/entities/author.entity";
+import { Forum } from "./forum/entities/forum.entity";
 
 @Injectable()
 export class CourseService {
@@ -33,11 +34,11 @@ export class CourseService {
             });
         
             if (affectedCount === 0) {
-            throw new UnauthorizedException('Course was not found or incorrect data')
+            throw new BadRequestException('Course was not found or incorrect data')
             }
 
             if (!affectedRows[0]) {
-                throw new UnauthorizedException('Failed to update course')
+                throw new InternalServerErrorException('Failed to update course')
             }
     
             return affectedRows[0];
@@ -46,12 +47,16 @@ export class CourseService {
         }
     }
 
-    async deleteCourse(courseId: number): Promise<number> {
+    async deleteCourse(courseId: number): Promise<Course> {
         try {
-            const course = await this.courseModel.destroy({where: {id: courseId}});
+            const course = await this.courseModel.findOne({where: {id: courseId}});
+            if (!course) {
+                throw new BadRequestException('Course was not found');
+            }
+            await course.destroy();
             return course;
         } catch(e) {
-            throw new UnauthorizedException('Failed to delte course');
+            throw new UnauthorizedException('Failed to delete course');
         }
     }
 
@@ -68,7 +73,7 @@ export class CourseService {
         try{ 
             const course = await this.courseModel.findOne({
                 where: {id: courseId},
-                include: [{model: Lesson, as: 'lessons'}, {model: Author, as: 'author'}]
+                include: [{model: Lesson, as: 'lessons'}, {model: Author, as: 'author'}, {model: Forum, as: 'forum'}]
             });
             return course;
         } catch(e) {

@@ -40,7 +40,7 @@ export class CourseController {
     }
 
     @Delete(':id')
-    async deleteCourse(@Req() req: Request): Promise<number> {
+    async deleteCourse(@Req() req: Request): Promise<Course> {
         try {
             const {id} = (req as any).params;
             if (!id) {

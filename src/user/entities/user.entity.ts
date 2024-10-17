@@ -1,5 +1,6 @@
-import { AutoIncrement, Column, HasOne, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { AutoIncrement, Column, HasMany, HasOne, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { Author } from './author.entity';
+import { Forum } from 'src/course/forum/entities/forum.entity';
 
 @Table
 export class User extends Model {
@@ -18,6 +19,9 @@ export class User extends Model {
   password: string;
 
   @HasOne(() => Author, {as: 'author'})
-  author: Author
+  author: Author;
+
+  @HasMany(() => Forum, {as: 'forum'})
+  forum: Forum[];
 
 }

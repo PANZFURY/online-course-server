@@ -1,6 +1,7 @@
 import { AutoIncrement, BelongsTo, Column, ForeignKey, HasMany, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { Author } from 'src/user/entities/author.entity';
 import { Lesson } from '../lesson/entities/lesson.entity';
+import { Forum } from '../forum/entities/forum.entity';
 
 @Table
 export class Course extends Model {
@@ -24,6 +25,9 @@ export class Course extends Model {
 
   @HasMany(() => Lesson, {as: 'lessons', foreignKey: 'courseId', onDelete: 'CASCADE'})
   lessons: Lesson[];
+
+  @HasMany(() => Forum, {as: 'forum', foreignKey: 'courseId', onDelete: 'CASCADE'})
+  forums: Forum[];
     
   @Column
   price: number;
