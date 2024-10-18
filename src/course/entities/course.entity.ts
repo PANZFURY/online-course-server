@@ -1,7 +1,8 @@
-import { AutoIncrement, BelongsTo, Column, ForeignKey, HasMany, Model, PrimaryKey, Table } from 'sequelize-typescript';
+import { AutoIncrement, BelongsTo, Column, ForeignKey, HasMany, HasOne, Model, PrimaryKey, Table } from 'sequelize-typescript';
 import { Author } from 'src/user/entities/author.entity';
 import { Lesson } from '../lesson/entities/lesson.entity';
 import { Forum } from '../forum/entities/forum.entity';
+import { Certificate } from '../certificate/entities/certificate.entity';
 
 @Table
 export class Course extends Model {
@@ -28,7 +29,10 @@ export class Course extends Model {
 
   @HasMany(() => Forum, {as: 'forum', foreignKey: 'courseId', onDelete: 'CASCADE'})
   forums: Forum[];
-    
+
+  @HasOne(() => Certificate, {as: 'certificate', onDelete: 'CASCADE'})
+  certificate: Certificate;  
+
   @Column
   price: number;
 

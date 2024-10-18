@@ -12,6 +12,8 @@ import { Course } from "./course/entities/course.entity";
 import { Lesson } from "./course/lesson/entities/lesson.entity";
 import { Forum } from "./course/forum/entities/forum.entity";
 import { ForumModule } from "./course/forum/forum.module";
+import { Certificate } from "./course/certificate/entities/certificate.entity";
+import { CertificateModule } from "./course/certificate/certificate.module";
 
 dotenv.config();
 
@@ -24,7 +26,7 @@ dotenv.config();
             username: process.env.DB_USERNAME,
             password: process.env.DB_PASSWORD,
             database: process.env.DB_NAME,
-            models: [User, Author, Course, Lesson, Forum],
+            models: [User, Author, Course, Lesson, Forum, Certificate],
             autoLoadModels: true,
             synchronize: true,
         }),
@@ -32,7 +34,8 @@ dotenv.config();
         FileModule,
         CourseModule,
         LessonModule,
-        ForumModule
+        ForumModule,
+        CertificateModule
     ],
 })
 
