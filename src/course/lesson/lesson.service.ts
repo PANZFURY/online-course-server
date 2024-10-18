@@ -48,7 +48,7 @@ export class LessonService{
         return affectedRows[0];
     }
 
-    async deleteLesson(lessonId): Promise<number> {
+    async deleteLesson(lessonId: number): Promise<number> {
         const lesson = await this.lessonModel.destroy({where: {id: lessonId}});
         return lesson;
     }
